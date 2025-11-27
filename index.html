@@ -51,7 +51,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwIxmfjd5cl4w8UXiHmIBxS
 // Load saved names list
 const savedNames = JSON.parse(localStorage.getItem("savedNameList") || "[]");
 function updateDatalist() {
-  savedList.innerHTML = "attendanceV.2";
+  savedList.innerHTML = "index";
   savedNames.forEach(name => {
     const option = document.createElement("option");
     option.value = name;
@@ -102,4 +102,5 @@ function closePopup() {
 </script>
 </body>
 </html>
+
 
