@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Offline Attendance</title>
+<style>
+/* Colors */
+:root { --blue: #1a73e8; --orange: #ff8c42; --white: #ffffff; --light-gray: #f4f4f4; }
+body { font-family: Arial, sans-serif; background: var(--light-gray); margin: 0; padding: 0; }
+.container { max-width: 420px; margin: 60px auto; background: var(--white); padding: 30px 40px; border-radius: 12px; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); text-align: center; }
+.logo { width: 120px; margin-bottom: 18px; }
+h2 { color: var(--blue); margin-bottom: 25px; }
+input { width: 100%; padding: 14px; font-size: 17px; border: 2px solid var(--blue); border-radius: 8px; margin-top: 12px; outline: none; transition: 0.2s; }
+input:focus { border-color: var(--orange); box-shadow: 0 0 6px rgba(255,140,66,0.4); }
+button { width: 100%; padding: 14px; font-size: 18px; margin-top: 18px; border: none; border-radius: 8px; background: var(--orange); color: white; cursor: pointer; transition: 0.25s; }
+button:hover { background: #ff7a22; }
+p { margin-top: 18px; font-style: italic; color: #444; }
+
+/* Custom Popup Box */
+#popupBox { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: var(--white); padding: 25px 35px; border-radius: 12px; box-shadow: 0px 6px 20px rgba(0,0,0,0.25); text-align: center; z-index: 999; opacity: 0; pointer-events: none; transition: 0.3s ease; }
+#popupBox.show { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
+#popupBox h3 { color: var(--blue); margin-bottom: 10px; }
+#popupBox button { margin-top: 15px; background: var(--blue); }
+</style>
+</head>
+<body>
+<div class="container">
+  <img src="MESLOGO1.png" class="logo" alt="Logo">
+  <h2>Attendance System</h2>
+<form id="attendanceForm" enctype="multipart/form-data" method="POST">
+    <input list="savedNames" id="nameInput" name="name" placeholder="Enter your name" required>
+    <datalist id="savedNames"></datalist>
+    <input type="file" id="imageInput" name="image" accept="image/*">
+    <button type="submit">Submit Attendance</button>
+  </form>
+  <p>After submitting, a confirmation will appear.</p>
+</div>
+
+<div id="popupBox">
+  <h3>Attendance Recorded!</h3>
+  <p>Your attendance has been submitted successfully.</p>
+  <button onclick="closePopup()">OK</button>
+</div>
+
+<script>
+const nameInput = document.getElementById("nameInput");
+const form = document.getElementById("attendanceForm");
+const savedList = document.getElementById("savedNames");
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwIxmfjd5cl4w8UXiHmIBxSF42L3Q13C8Y77nDe01VMUuKD9cdQOZCIXoKl3JzE6rzK/exec"; // Change to your URL
+
+// Load saved names list
+const savedNames = JSON.parse(localStorage.getItem("savedNameList") || "[]");
+function updateDatalist() {
+  savedList.innerHTML = "attendanceV.2";
+  savedNames.forEach(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    savedList.appendChild(option);
+  });
+}
+updateDatalist();
+
+// When form is submitted
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const nameValue = nameInput.value.trim();
+  if (!nameValue) return;
+
+  // Save typed name to suggestions
+  if (!savedNames.includes(nameValue)) {
+    savedNames.push(nameValue);
+    localStorage.setItem("savedNameList", JSON.stringify(savedNames));
+    updateDatalist();
+  }
+
+  // Prepare form data including image
+  const formData = new FormData(form);
+
+  let response = await fetch(GAS_URL, {
+    method: "POST",
+    body: formData
+  });
+
+  let resultText = await response.text();
+
+  document.querySelector("#popupBox h3").innerText = "Attendance Recorded!";
+  document.querySelector("#popupBox p").innerText = resultText;
+  showPopup();
+
+  // Clear input box and file
+  nameInput.value = "";
+  document.getElementById("imageInput").value = "";
+});
+
+// Popup functions
+function showPopup() {
+  document.getElementById("popupBox").classList.add("show");
+}
+function closePopup() {
+  document.getElementById("popupBox").classList.remove("show");
+}
+</script>
+</body>
+</html>
